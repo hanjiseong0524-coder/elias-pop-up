@@ -1,5 +1,13 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>요정섬 탐방</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#3aa0e8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="엘리아스"><link rel="apple-touch-icon" href="icon-192.png">
+<script>/* 모바일: 첫 터치 때 전체 화면(주소창 숨김) + 가로 고정 — 홈 화면 앱으로 열었을 땐 이미 전체 화면 */
+(function(){ var st=matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches||navigator.standalone; if(st) return;
+  var touch=matchMedia('(pointer: coarse)').matches; if(!touch) return;
+  function go(){ var d=document.documentElement, rq=d.requestFullscreen||d.webkitRequestFullscreen; if(document.fullscreenElement||document.webkitFullscreenElement||!rq) return;
+    try{ var p=rq.call(d,{navigationUI:'hide'}); var lock=function(){ try{ var o=screen.orientation; if(o&&o.lock) o.lock('landscape').catch(function(){}); }catch(e){} }; if(p&&p.then) p.then(lock).catch(function(){}); else lock(); }catch(e){} }
+  addEventListener('pointerup',go,{capture:true}); addEventListener('touchend',go,{capture:true});
+})();</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
