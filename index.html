@@ -239,7 +239,12 @@ body.touch #topbar,body.touch #quest,body.touch #prompt,body.touch #toast,body.t
 #dlgPortrait{left:clamp(8px,6vw,96px);bottom:calc(100% - 16px);height:min(48vh,400px);z-index:1}   /* every portrait: upper body, same scale */
 #dlgName,#dialog.has-portrait #dlgName{left:clamp(16px,6.5vw,104px);top:auto;bottom:calc(100% - 14px);background:#d9822b;color:#fff;border-radius:7px;font-size:clamp(16px,3.6vh,26px);padding:.42em 1.5em .38em;min-width:4.6em;text-align:center;transform:none;box-shadow:0 3px 0 rgba(0,0,0,.16)}
 #dlgName::after{left:24px;bottom:-14px;border-left:5px solid transparent;border-right:11px solid transparent;border-top:15px solid #d9822b}
-#dlgText{font-size:clamp(16px,3.9vh,26px);line-height:1.65;min-height:3.3em}
+#dlgText{font-size:clamp(20px,5.6vh,26px);line-height:1.65;min-height:3.3em}   /* 모든 기기에서 같은 크기 (아이폰 가로 ≈ 22px) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* iOS가 글자 크기를 제멋대로 키우지 않게 */
+#ghbText{font-size:clamp(17px,5vh,19px)}
+/* 팝업이 열려 있으면 조이스틱 · 달리기 · 점프 · 상호작용 버튼을 숨김 (팝업 버튼을 가리지 않게) */
+body.popup-open #pad,body.popup-open #joyZone,body.popup-open #zoomPad{display:none!important}
+.fitpop{max-height:none!important;overflow:visible!important;transform-origin:50% 50%}
 #dlgNext{right:clamp(22px,3vw,40px);bottom:clamp(14px,3vh,24px)}
 #dlgBtns{bottom:calc(100% + 18px)}
 body.touch #prompt{top:40%}
@@ -312,7 +317,7 @@ body.touch #joyZone,body.touch #pad{display:block}
 #dwPop .primary:disabled{filter:grayscale(1) brightness(.7);cursor:not-allowed;box-shadow:none}
 #dwPop .ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;font-size:14px}
 /* wreath popup */
-#dwPop{position:fixed;inset:0;background:rgba(14,4,26,.62);display:grid;place-items:center;opacity:0;pointer-events:none;transition:.25s;z-index:10}
+#dwPop{position:fixed;inset:0;background:rgba(14,4,26,.62);display:grid;place-items:center;opacity:0;pointer-events:none;transition:.25s;z-index:60}
 #dwPop.show{opacity:1;pointer-events:auto}
 #dwPop .card{width:min(960px,calc(100vw - 20px));max-height:calc(100vh - 20px);overflow:auto;padding:18px 22px 16px;transform:scale(.96);transition:.25s}
 #dwPop.show .card{transform:none}
@@ -375,6 +380,9 @@ body.touch #mapClose{font-size:calc(14px*var(--hs,1));padding:6px 12px}
 #epX{left:88.5%;top:23.4%;width:7.2%;height:10.2%}
 #epLater{left:21.4%;top:85.6%;width:18.2%;height:6.8%}
 #epDl{left:41.5%;top:85.6%;width:37.2%;height:6.8%}
+#bgmBtn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(44px + env(safe-area-inset-top,0px));z-index:40;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(30,20,40,.45);color:#fff;font-size:18px;line-height:1;display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px)}
+#bgmBtn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#bgmBtn[hidden]{display:none}
 </style>
 
 <div id="app">
@@ -25984,4 +25992,37 @@ tick();
 enterRegion('tree').finally(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>window.__bootDone&&window.__bootDone())));   // 첫 장면이 그려진 뒤 로딩 화면을 걷음
 </script>
 
+<script>/* 팝업: 화면 크기에 맞춰 통째로 줄여서 한 화면에 다 보이게 + 팝업이 열린 동안 조작 버튼 숨김 */
+(function(){ var POPS=[['stampPop','.spbox'],['wreathUI','.wbox'],['fwUI','.wbox'],['regUI','.wbox'],['ghUI','#ghBoard'],['complete','.cbox'],['dwPop','.card']];
+  function vis(o){ if(!o||o.hidden) return false; if(o.id==='dwPop') return o.classList.contains('show'); return getComputedStyle(o).display!=='none'; }
+  function tick(){ var any=false, vw=innerWidth, vh=innerHeight;
+    for(var i=0;i<POPS.length;i++){ var o=document.getElementById(POPS[i][0]); if(!vis(o)) continue; any=true; var c=o.querySelector(POPS[i][1]); if(!c) continue;
+      if(!c.classList.contains('fitpop')) c.classList.add('fitpop');
+      var w=c.offsetWidth, h=c.offsetHeight; if(!w||!h) continue; var k=Math.min(1,(vw-16)/w,(vh-16)/h); k=Math.floor(k*1000)/1000;
+      var v=k<1?String(k):''; if(c.style.scale!==v) c.style.scale=v;
+      var r=c.getBoundingClientRect(), t=(c.dataset.fitT||'0,0').split(',').map(Number), dx=(vw-r.width)/2-r.left, dy=(vh-r.height)/2-r.top;   // 화면 한가운데로
+      if(Math.abs(dx)>.5||Math.abs(dy)>.5){ t[0]=Math.round((t[0]+dx)*10)/10; t[1]=Math.round((t[1]+dy)*10)/10; c.dataset.fitT=t.join(','); c.style.translate=(t[0]||t[1])?t[0]+'px '+t[1]+'px':''; } }
+    document.body.classList.toggle('popup-open',any); }
+  setInterval(tick,150); addEventListener('resize',tick); addEventListener('orientationchange',function(){ setTimeout(tick,200); });
+})();</script>
+<button id="bgmBtn" type="button" aria-label="배경음악 끄기" title="배경음악" hidden>🔊</button>
+<script>/* 배경음악: 트릭컬 로비 테마 'DayLife' (bgm.mp3, 121.3초 한 바퀴를 끊김 없이 반복). 브라우저 규칙상 첫 터치·클릭·키 입력 때 시작 */
+(function(){ var LOOP0=.5, LOOP1=.5+5349329/44100, VOL=.32, KEY='elias_bgm_off';
+  var off=false; try{ off=localStorage.getItem(KEY)==='1'; }catch(e){}
+  var ctx=null, gain=null, src=null, buf=null, loading=null, btn=document.getElementById('bgmBtn');
+  function ui(){ btn.hidden=false; btn.textContent=off?'🔇':'🔊'; btn.setAttribute('aria-label',off?'배경음악 켜기':'배경음악 끄기'); }
+  function load(){ if(loading) return loading; loading=fetch('bgm.mp3').then(function(r){ if(!r.ok) throw new Error('bgm '+r.status); return r.arrayBuffer(); })
+      .then(function(a){ return new Promise(function(res,rej){ var p=ctx.decodeAudioData(a,res,rej); if(p&&p.then) p.then(res,rej); }); }).then(function(b){ buf=b; return b; });
+    return loading; }
+  function play(){ if(off||src||!ctx) return; load().then(function(){ if(off||src) return; src=ctx.createBufferSource(); src.buffer=buf; src.loop=true; src.loopStart=LOOP0; src.loopEnd=Math.min(LOOP1,buf.duration);
+      src.connect(gain); var t=ctx.currentTime; gain.gain.cancelScheduledValues(t); gain.gain.setValueAtTime(0,t); gain.gain.linearRampToValueAtTime(VOL,t+1.5); src.start(0,LOOP0); }).catch(function(e){ console.warn('BGM',e); }); }
+  function stop(){ if(!src) return; var s=src, t=ctx.currentTime; src=null; gain.gain.cancelScheduledValues(t); gain.gain.setValueAtTime(gain.gain.value,t); gain.gain.linearRampToValueAtTime(0,t+.4); setTimeout(function(){ try{ s.stop(); }catch(e){} },450); }
+  function first(){ try{ if(!ctx){ var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; ctx=new AC(); gain=ctx.createGain(); gain.gain.value=0; gain.connect(ctx.destination); }
+      if(ctx.state==='suspended') ctx.resume(); play(); }catch(e){} }
+  ['pointerdown','touchend','keydown'].forEach(function(ev){ addEventListener(ev,first,{capture:true}); });
+  btn.addEventListener('click',function(e){ e.stopPropagation(); off=!off; try{ localStorage.setItem(KEY,off?'1':'0'); }catch(_){} ui(); if(off) stop(); else { first(); } });
+  btn.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+  document.addEventListener('visibilitychange',function(){ if(!ctx) return; if(document.hidden) ctx.suspend(); else if(!off) ctx.resume(); });
+  ui();
+})();</script>
 </body></html>
